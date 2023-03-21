@@ -85,7 +85,7 @@ impplot1 <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
   # get the DV
   dv <- all.vars(lm.formula)[1]
   # imputing...
-  dat %>% mice::mice(print=FALSE, meth = imp.method, seed=seed) %>% complete("all") %>% 
+  tmp <- dat %>% mice::mice(print=FALSE, meth = imp.method, seed=seed) %>% complete("all") %>% 
     # fit the model
     purrr::map(~.x %$% do.call("lm", list(lm.formula, .)) %>% 
                  # extract fitted vals
@@ -95,38 +95,26 @@ impplot1 <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
     dplyr::rowwise() %>%
     # get the avg.fitted vals and variance (last col = observed val)
     dplyr::mutate(means = mean(c_across(-DV)),
-           vars = var(c_across(-DV))
-    ) %>% 
+                  vars = var(c_across(-DV))
+    ) 
+  plot <- tmp %>% 
     ggplot(aes(x = means, y = DV, color = vars, size = vars)) + 
     geom_point(alpha = 0.7)  +
     # reverse the col order
     scale_color_distiller(palette = "YlOrRd", trans="reverse") +
-    labs(x = "average fitted value", y = "observed DV", color = "variance") +
+    labs(title = paste("Model: ", deparse(lm.formula)),
+         x = "average fitted value", y = paste("observed", dv), color = "variance") +
     theme_classic() +
     # flip the color bar
-    guides(size = FALSE, col = guide_colourbar(reverse=T)) 
+    guides(size = FALSE, col = guide_colourbar(reverse=T))  
+  
+  
   #### Does gerko want MSE in this plot together?... :3 ????????
-  
   # output table
-  #### shouldn't repeat this whole thing.!
-  #### also cut the table -- make it expandable.!
+  #### also cut the table -- make it expandable/scrollable?
+  tab <- tmp %>% data.table::data.table()
   
-  # if(print==TRUE) {
-  #   # imputing...
-  #   dat %>% mice::mice(print=FALSE, meth = imp.method, seed=seed) %>% complete("all") %>% 
-  #     # fit the model
-  #     purrr::map(~.x %$% do.call("lm", list(lm.formula, .)) %>% 
-  #                  # extract fitted vals
-  #                  .$fitted.values) %>% 
-  #     # gerko: dv --> observed value ? 
-  #     dplyr::bind_cols(., DV = dat[,dv]) %>%
-  #     dplyr::rowwise() %>%
-  #     # get the avg.fitted vals and variance (last col = observed val)
-  #     dplyr::mutate(means = mean(c_across(-DV)),
-  #                   vars = var(c_across(-DV))
-  #     ) %>% knitr::kable()
-  # }
-    
+  if(print) return(list(plot, tab)) else return(plot)
 }
 
 
