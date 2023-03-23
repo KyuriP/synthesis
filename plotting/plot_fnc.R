@@ -98,11 +98,11 @@ modelplot <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
                   vars = var(c_across(-DV))
     ) 
   plot <- tmp %>% 
-    ggplot(aes(x = means, y = DV, color = vars, size = vars)) + 
-    geom_point(alpha = 0.7)  +
+    ggplot(aes(x = means, y = DV, fill = vars, size = vars)) + 
+    geom_point(alpha = 0.7, col = "black", shape=21)  +
     # reverse the col order
     #scale_color_distiller(palette = "YlOrRd", trans="reverse") +
-    scale_fill_gradient(low = mice:::mdc(0), high = mice:::mdc(1)) +
+    scale_fill_gradient(low =  "white", high = "#B61A51B3") +
     labs(title = paste("Model: ", deparse(lm.formula)),
          x = "average fitted value", y = paste("observed", dv), color = "variance") +
     theme_classic() +
@@ -115,7 +115,6 @@ modelplot <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
   
   if(print) return(list(plot, tab)) else return(plot)
 }
-
 
 
 
