@@ -327,13 +327,13 @@ plot3 <- synplot2({complete(imp, "all") %>% map(~.x %$% lm(sws ~ log10(bw) + odi
 plot3 
 
 ## variance plots
-impplot1(mammalsleep, lm.formula = sws ~ log10(bw) + odi, print=TRUE)
+modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, print=TRUE)
 
-impplot1(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=123)
+modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=123)
 
-impplot1(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=124)
+modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=124)
 
-impplot1(mammalsleep, imp.method = "mean", lm.formula = sws ~ log10(bw) + odi, seed=124)
+modelplot(mammalsleep, imp.method = "mean", lm.formula = sws ~ log10(bw) + odi, seed=124)
 
 ```
 

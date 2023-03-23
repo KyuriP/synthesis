@@ -81,7 +81,7 @@ library(mice)
 #'
 #' @return a ggplot object
 
-impplot1 <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
+modelplot <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
   # get the DV
   dv <- all.vars(lm.formula)[1]
   # imputing...
@@ -101,17 +101,16 @@ impplot1 <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
     ggplot(aes(x = means, y = DV, color = vars, size = vars)) + 
     geom_point(alpha = 0.7)  +
     # reverse the col order
-    scale_color_distiller(palette = "YlOrRd", trans="reverse") +
+    #scale_color_distiller(palette = "YlOrRd", trans="reverse") +
+    scale_fill_gradient(low = mice:::mdc(0), high = mice:::mdc(1)) +
     labs(title = paste("Model: ", deparse(lm.formula)),
          x = "average fitted value", y = paste("observed", dv), color = "variance") +
     theme_classic() +
     # flip the color bar
-    guides(size = FALSE, col = guide_colourbar(reverse=T))  
-  
-  
-  #### Does gerko want MSE in this plot together?... :3 ????????
+    # guides(size = FALSE, col = guide_colourbar(reverse=T))  
+    guides(size = FALSE)  
+    
   # output table
-  #### also cut the table -- make it expandable/scrollable?
   tab <- tmp %>% data.table::data.table()
   
   if(print) return(list(plot, tab)) else return(plot)
