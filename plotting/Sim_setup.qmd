@@ -311,6 +311,9 @@ imp <- mammalsleep %>% mice(print=FALSE)
 imp %>% complete("all") %>% map(~.x %$% lm(sws ~ log10(bw) + odi)) %>% pool()
 plot1 <- synplot2({complete(imp, "all") %>% map(~.x %$% lm(sws ~ log10(bw) + odi))}, smoother = "lm")
 
+## variance plots
+fit <- mice:::with.mids(imp, lm(sws ~ log10(bw) + odi))
+modelplot(fit)
 
 
 imp <- mammalsleep %>% mice(print=FALSE) 
@@ -319,6 +322,9 @@ plot2 <- synplot2({complete(imp, "all") %>% map(~.x %$% lm(sws ~ log10(bw) + odi
 plot1 
 plot2
 
+## variance plots
+fit <- mice:::with.mids(imp, lm(sws ~ log10(bw) + odi))
+modelplot(fit)
 
 
 imp <- mammalsleep %>% mice(print=FALSE, meth = "mean") 
@@ -327,15 +333,11 @@ plot3 <- synplot2({complete(imp, "all") %>% map(~.x %$% lm(sws ~ log10(bw) + odi
 plot3 
 
 ## variance plots
-modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, print=TRUE)
-
-modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=123)
-
-modelplot(mammalsleep, lm.formula = sws ~ log10(bw) + odi, seed=124)
-
-modelplot(mammalsleep, imp.method = "mean", lm.formula = sws ~ log10(bw) + odi, seed=124)
+fit <- mice:::with.mids(imp, lm(sws ~ log10(bw) + odi))
+modelplot(fit)
 
 ```
+
 
 
 

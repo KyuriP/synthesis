@@ -81,34 +81,34 @@ library(mice)
 #'
 #' @return a ggplot object
 
-modelplot <- function(dat, imp.method=NULL, lm.formula, seed=NA, print=FALSE){
-  # get the DV
-  dv <- all.vars(lm.formula)[1]
-  # imputing...
-  tmp <- dat %>% mice::mice(print=FALSE, meth = imp.method, seed=seed) %>% complete("all") %>% 
-    # fit the model
-    purrr::map(~.x %$% do.call("lm", list(lm.formula, .)) %>% 
-                 # extract fitted vals
-                 .$fitted.values) %>% 
-    # gerko: dv --> observed value ? 
-    dplyr::bind_cols(., DV = dat[,dv]) %>%
-    dplyr::rowwise() %>%
-    # get the avg.fitted vals and variance (last col = observed val)
-    dplyr::mutate(means = mean(c_across(-DV)),
-                  vars = var(c_across(-DV))
-    ) 
+modelplot <- function(data, print=F){
+  dv <- data[["call"]][["expr"]][[2]][[2]]
+  
+  tmp <- purrr::map_dfr(1:length(data$analyses), ~ {
+    broom::augment(data$analyses[[.x]])
+  }, .id="m") %>%
+    ### extract row numbers :/ :/ :/ 
+    dplyr::mutate(row = rep(1:(nrow(.)/dplyr::n_distinct(m)), dplyr::n_distinct(m))) %>% 
+    tidyr::pivot_wider(id_cols = row, names_from = m, values_from = c(dv, .fitted, .resid)) %>% 
+    dplyr::rowwise() %>% 
+    dplyr::summarize(
+      ### extract observed dat :/ :/ :/ 
+      observed = ifelse(dplyr::n_distinct(c_across(starts_with(rlang::as_string(dv))))==1, get(paste0(dv,"_1")), NA),
+      means = mean(c_across(starts_with(".fitted"))),
+      vars = var(c_across(starts_with(".fitted")))
+    )
   plot <- tmp %>% 
-    ggplot(aes(x = means, y = DV, fill = vars, size = vars)) + 
-    geom_point(alpha = 0.7, col = "black", shape=21)  +
+    ggplot2::ggplot(ggplot2::aes(x = means, y = observed, fill = vars, size = vars)) + 
+    ggplot2::geom_point(alpha = 0.7, col = "black", shape=21)  +
     # reverse the col order
     #scale_color_distiller(palette = "YlOrRd", trans="reverse") +
-    scale_fill_gradient(low =  "white", high = "#B61A51B3") +
-    labs(title = paste("Model: ", deparse(lm.formula)),
+    ggplot2::scale_fill_gradient(low =  "white", high = "#B61A51B3") +
+    ggplot2::labs(title = paste("Model: ", deparse(data[["call"]][["expr"]])),
          x = "average fitted value", y = paste("observed", dv), color = "variance") +
-    theme_classic() +
+    ggplot2::theme_classic() +
     # flip the color bar
     # guides(size = FALSE, col = guide_colourbar(reverse=T))  
-    guides(size = FALSE)  
+    ggplot2::guides(size = "none")  
     
   # output table
   tab <- tmp %>% data.table::data.table()
